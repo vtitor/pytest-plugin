@@ -52,7 +52,7 @@ public class MyGotoDeclarationHandler extends GotoDeclarationHandlerBase {
         PyDecoratorList decorators = function.getDecoratorList();
         if (decorators != null) for (PyDecorator decorator : decorators.getDecorators()) {
             String text = decorator.getText();
-            if (text.startsWith("@fixture") || text.startsWith("@pytest.fixture")) return true;
+            if (text.startsWith("@fixture") || text.startsWith("@pytest.fixture") || text.startsWith("@yield_fixture") || text.startsWith("@pytest.yield_fixture")) return true;
         }
         return false;
     }
