@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.pytest</id>
     <name>Pytest</name>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <vendor email="support@pytest.store" url="http://pytest.store">Victor Titor</vendor>
 
     <description><![CDATA[
