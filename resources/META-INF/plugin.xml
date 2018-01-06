@@ -9,8 +9,8 @@
     ]]></description>
 
     <change-notes><![CDATA[
-      <ul><li>Go to fixture declaration, which is defined in test file, conftest files or plugins</li>
-      <li>The trial is available until January 1, 2018</li></ul>
+      <ul><li>Support yield_fixture decorator for older pytest versions</li>
+      <li>Extend the trial period until March 1, 2018</li></ul>
     ]]>
     </change-notes>
 
