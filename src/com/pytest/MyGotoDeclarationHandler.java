@@ -18,8 +18,7 @@ import java.util.Date;
 public class MyGotoDeclarationHandler extends GotoDeclarationHandlerBase {
     @Override
     public PsiElement getGotoDeclarationTarget(@Nullable PsiElement source, Editor editor) {
-        boolean expired = new Date(118, 2, 1).before(new Date()); // March 1, 2018
-        if (!expired && source != null && isPyFuncParameter(source)) {
+        if (source != null && isPyFuncParameter(source)) {
             String sourceDirPath = source.getContainingFile().getContainingDirectory().getVirtualFile().getPath();
             PyFunction conftestFunc = null;
             PyFunction outSideFunc = null;
