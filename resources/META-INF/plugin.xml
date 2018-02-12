@@ -9,8 +9,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
-      <ul><li>Support yield_fixture decorator for older pytest versions</li>
-      <li>Extend the trial period until March 1, 2018</li></ul>
+      <ul><li>Remove the trial period</li></ul>
     ]]>
     </change-notes>
 
