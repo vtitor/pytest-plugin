@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.pytest</id>
     <name>Pytest</name>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
     <vendor email="support@pytest.store" url="http://pytest.store">Victor Titor</vendor>
 
     <description><![CDATA[
@@ -9,11 +9,11 @@
     ]]></description>
 
     <change-notes><![CDATA[
-      <ul><li>Remove the trial period</li></ul>
+      <ul><li>Compatibility with latest PyCharm (181.*) builds</li></ul>
     ]]>
     </change-notes>
 
-    <idea-version since-build="173" until-build="173.*"/>
+    <idea-version since-build="173" until-build="181.*"/>
 
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.python</depends>
