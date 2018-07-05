@@ -12,7 +12,6 @@ import com.jetbrains.python.psi.stubs.PyFunctionNameIndex;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.Date;
 
 
 public class MyGotoDeclarationHandler extends GotoDeclarationHandlerBase {
