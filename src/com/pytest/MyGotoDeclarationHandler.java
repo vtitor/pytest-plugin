@@ -13,54 +13,65 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
-
 public class MyGotoDeclarationHandler extends GotoDeclarationHandlerBase {
-    @Override
-    public PsiElement getGotoDeclarationTarget(@Nullable PsiElement source, Editor editor) {
-        if (source != null && isPyFuncParameter(source)) {
-            String sourceDirPath = source.getContainingFile().getContainingDirectory().getVirtualFile().getPath();
-            PyFunction conftestFunc = null;
-            PyFunction outSideFunc = null;
-            for (PyFunction function : findFunctions(source))
-                if (isFixture(function)) {
-                    PsiFile funcFile = function.getContainingFile();
-                    String funcDirPath = funcFile.getContainingDirectory().getVirtualFile().getPath();
-                    if (funcFile.equals(source.getContainingFile())) return function;
-                    if (isConftest(funcFile)) {
-                        if (sourceDirPath.contains(funcDirPath)) {
-                            if (conftestFunc != null) {
-                                String conftestFuncDirPath = conftestFunc.getContainingFile().getContainingDirectory().getVirtualFile().getPath();
-                                if (funcDirPath.contains(conftestFuncDirPath))
-                                    conftestFunc = function; // pick from the nearest
-                            } else conftestFunc = function;
-                        }
-                    } else outSideFunc = function;
-                }
-            return conftestFunc != null ? conftestFunc : outSideFunc;
+  @Override
+  public PsiElement getGotoDeclarationTarget(@Nullable PsiElement source, Editor editor) {
+    if (source != null && isPyFuncParameter(source)) {
+      String sourceDirPath =
+          source.getContainingFile().getContainingDirectory().getVirtualFile().getPath();
+      PyFunction conftestFunc = null;
+      PyFunction outSideFunc = null;
+      for (PyFunction function : findFunctions(source))
+        if (isFixture(function)) {
+          PsiFile funcFile = function.getContainingFile();
+          String funcDirPath = funcFile.getContainingDirectory().getVirtualFile().getPath();
+          if (funcFile.equals(source.getContainingFile())) return function;
+          if (isConftest(funcFile)) {
+            if (sourceDirPath.contains(funcDirPath)) {
+              if (conftestFunc != null) {
+                String conftestFuncDirPath =
+                    conftestFunc
+                        .getContainingFile()
+                        .getContainingDirectory()
+                        .getVirtualFile()
+                        .getPath();
+                if (funcDirPath.contains(conftestFuncDirPath))
+                  conftestFunc = function; // pick from the nearest
+              } else conftestFunc = function;
+            }
+          } else outSideFunc = function;
         }
-        return null;
+      return conftestFunc != null ? conftestFunc : outSideFunc;
     }
+    return null;
+  }
 
+  private boolean isPyFuncParameter(PsiElement source) {
+    return source.getLanguage() instanceof PythonLanguage
+        && source.getParent() instanceof PyNamedParameter;
+  }
 
-    private boolean isPyFuncParameter(PsiElement source) {
-        return source.getLanguage() instanceof PythonLanguage && source.getParent() instanceof PyNamedParameter;
-    }
+  private boolean isFixture(PyFunction function) {
+    PyDecoratorList decorators = function.getDecoratorList();
+    if (decorators != null)
+      for (PyDecorator decorator : decorators.getDecorators()) {
+        String text = decorator.getText();
+        if (text.startsWith("@fixture")
+            || text.startsWith("@pytest.fixture")
+            || text.startsWith("@yield_fixture")
+            || text.startsWith("@pytest.yield_fixture")) return true;
+      }
+    return false;
+  }
 
-    private boolean isFixture(PyFunction function) {
-        PyDecoratorList decorators = function.getDecoratorList();
-        if (decorators != null) for (PyDecorator decorator : decorators.getDecorators()) {
-            String text = decorator.getText();
-            if (text.startsWith("@fixture") || text.startsWith("@pytest.fixture") || text.startsWith("@yield_fixture") || text.startsWith("@pytest.yield_fixture")) return true;
-        }
-        return false;
-    }
+  private boolean isConftest(PsiFile file) {
+    return file.getName().equals("conftest.py");
+  }
 
-    private boolean isConftest(PsiFile file) {
-        return file.getName().equals("conftest.py");
-    }
-
-    private Collection<PyFunction> findFunctions(PsiElement source) {
-        Project project = source.getProject();
-        return PyFunctionNameIndex.find(source.getText(), project, GlobalSearchScope.projectScope(project));
-    }
+  private Collection<PyFunction> findFunctions(PsiElement source) {
+    Project project = source.getProject();
+    GlobalSearchScope scope = GlobalSearchScope.projectScope(project);
+    String text = source.getText();
+    return PyFunctionNameIndex.find(text, project, scope);
+  }
 }
