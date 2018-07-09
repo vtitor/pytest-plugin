@@ -17,30 +17,29 @@ public class MyGotoDeclarationHandler extends GotoDeclarationHandlerBase {
   @Override
   public PsiElement getGotoDeclarationTarget(@Nullable PsiElement source, Editor editor) {
     if (source != null && isPyFuncParameter(source)) {
-      String sourceDirPath =
-          source.getContainingFile().getContainingDirectory().getVirtualFile().getPath();
-      PyFunction conftestFunc = null;
-      PyFunction outSideFunc = null;
+      String sourceDirPath = getDirPath(source);
+      PyFunction conftestFunc = null, outSideFunc = null;
+
       for (PyFunction function : findFunctions(source))
         if (isFixture(function)) {
           PsiFile funcFile = function.getContainingFile();
-          String funcDirPath = funcFile.getContainingDirectory().getVirtualFile().getPath();
+          String funcDirPath = getDirPath(function);
+
           if (funcFile.equals(source.getContainingFile())) return function;
+
           if (isConftest(funcFile)) {
             if (sourceDirPath.contains(funcDirPath)) {
               if (conftestFunc != null) {
-                String conftestFuncDirPath =
-                    conftestFunc
-                        .getContainingFile()
-                        .getContainingDirectory()
-                        .getVirtualFile()
-                        .getPath();
-                if (funcDirPath.contains(conftestFuncDirPath))
-                  conftestFunc = function; // pick from the nearest
+                String conftestFuncDirPath = getDirPath(conftestFunc);
+                // pick nearest
+                if (funcDirPath.contains(conftestFuncDirPath)) conftestFunc = function;
               } else conftestFunc = function;
             }
-          } else outSideFunc = function;
+          } else {
+            outSideFunc = function;
+          }
         }
+
       return conftestFunc != null ? conftestFunc : outSideFunc;
     }
     return null;
@@ -73,5 +72,9 @@ public class MyGotoDeclarationHandler extends GotoDeclarationHandlerBase {
     GlobalSearchScope scope = GlobalSearchScope.projectScope(project);
     String text = source.getText();
     return PyFunctionNameIndex.find(text, project, scope);
+  }
+
+  private String getDirPath(PsiElement element) {
+    return element.getContainingFile().getContainingDirectory().getVirtualFile().getPath();
   }
 }
