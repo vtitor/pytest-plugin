@@ -9,6 +9,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.jetbrains.python.PythonLanguage;
 import com.jetbrains.python.psi.*;
 import com.jetbrains.python.psi.stubs.PyFunctionNameIndex;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -17,40 +18,45 @@ public class MyGotoDeclarationHandler extends GotoDeclarationHandlerBase {
   @Override
   public PsiElement getGotoDeclarationTarget(@Nullable PsiElement source, Editor editor) {
     if (source != null && isPyFuncParameter(source)) {
-      String sourceDirPath = getDirPath(source);
-      PyFunction conftestFunc = null, outSideFunc = null;
-
-      for (PyFunction function : findFunctions(source))
-        if (isFixture(function)) {
-          PsiFile funcFile = function.getContainingFile();
-          String funcDirPath = getDirPath(function);
-
-          if (funcFile.equals(source.getContainingFile())) return function;
-
-          if (isConftest(funcFile)) {
-            if (sourceDirPath.contains(funcDirPath)) {
-              if (conftestFunc != null) {
-                String conftestFuncDirPath = getDirPath(conftestFunc);
-                // pick nearest
-                if (funcDirPath.contains(conftestFuncDirPath)) conftestFunc = function;
-              } else conftestFunc = function;
-            }
-          } else {
-            outSideFunc = function;
-          }
-        }
-
-      return conftestFunc != null ? conftestFunc : outSideFunc;
+      return findFixtureWithSameName(source);
     }
     return null;
   }
 
-  private boolean isPyFuncParameter(PsiElement source) {
+  @Nullable
+  private PsiElement findFixtureWithSameName(@NotNull PsiElement source) {
+    String sourceDirPath = getDirPath(source);
+    PyFunction conftestFunc = null, outSideFunc = null;
+
+    for (PyFunction function : findFunctions(source))
+      if (isFixture(function)) {
+        PsiFile funcFile = function.getContainingFile();
+        String funcDirPath = getDirPath(function);
+
+        if (funcFile.equals(source.getContainingFile())) return function;
+
+        if (isConftest(funcFile)) {
+          if (sourceDirPath.contains(funcDirPath)) {
+            if (conftestFunc != null) {
+              String conftestFuncDirPath = getDirPath(conftestFunc);
+              // pick nearest
+              if (funcDirPath.contains(conftestFuncDirPath)) conftestFunc = function;
+            } else conftestFunc = function;
+          }
+        } else {
+          outSideFunc = function;
+        }
+      }
+
+    return conftestFunc != null ? conftestFunc : outSideFunc;
+  }
+
+  private boolean isPyFuncParameter(@NotNull PsiElement source) {
     return source.getLanguage() instanceof PythonLanguage
         && source.getParent() instanceof PyNamedParameter;
   }
 
-  private boolean isFixture(PyFunction function) {
+  private boolean isFixture(@NotNull PyFunction function) {
     PyDecoratorList decorators = function.getDecoratorList();
     if (decorators != null)
       for (PyDecorator decorator : decorators.getDecorators()) {
@@ -63,18 +69,20 @@ public class MyGotoDeclarationHandler extends GotoDeclarationHandlerBase {
     return false;
   }
 
-  private boolean isConftest(PsiFile file) {
+  private boolean isConftest(@NotNull PsiFile file) {
     return file.getName().equals("conftest.py");
   }
 
-  private Collection<PyFunction> findFunctions(PsiElement source) {
+  @NotNull
+  private Collection<PyFunction> findFunctions(@NotNull PsiElement source) {
     Project project = source.getProject();
     GlobalSearchScope scope = GlobalSearchScope.projectScope(project);
     String text = source.getText();
     return PyFunctionNameIndex.find(text, project, scope);
   }
 
-  private String getDirPath(PsiElement element) {
+  @NotNull
+  private String getDirPath(@NotNull PsiElement element) {
     return element.getContainingFile().getContainingDirectory().getVirtualFile().getPath();
   }
 }
