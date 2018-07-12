@@ -18,17 +18,21 @@ public class MyGotoDeclarationHandler extends GotoDeclarationHandlerBase {
   @Override
   public PsiElement getGotoDeclarationTarget(@Nullable PsiElement source, Editor editor) {
     if (source != null && isPyFuncParameter(source)) {
-      return findFixtureWithSameName(source);
+      PyFunction fixture = findFixtureWithSameName(source);
+      return fixture != null ? fixture : findFixtureWithCustomName(source);
     }
     return null;
   }
 
   @Nullable
-  private PsiElement findFixtureWithSameName(@NotNull PsiElement source) {
+  private PyFunction findFixtureWithSameName(@NotNull PsiElement source) {
     String sourceDirPath = getDirPath(source);
+    String text = source.getText();
+    Project project = source.getProject();
+
     PyFunction conftestFunc = null, outSideFunc = null;
 
-    for (PyFunction function : findFunctions(source))
+    for (PyFunction function : findFunctions(text, project))
       if (isFixture(function)) {
         PsiFile funcFile = function.getContainingFile();
         String funcDirPath = getDirPath(function);
@@ -49,6 +53,19 @@ public class MyGotoDeclarationHandler extends GotoDeclarationHandlerBase {
       }
 
     return conftestFunc != null ? conftestFunc : outSideFunc;
+  }
+
+  @Nullable
+  private PyFunction findFixtureWithCustomName(@NotNull PsiElement source) {
+    Project project = source.getProject();
+    String text = source.getText();
+
+    for (String funcKey : PyFunctionNameIndex.allKeys(project))
+      if (!funcKey.equals(text))
+        for (PyFunction function : findFunctions(funcKey, project))
+          if (isFixture(function) && hasNameParam(function, text)) return function;
+
+    return null;
   }
 
   private boolean isPyFuncParameter(@NotNull PsiElement source) {
@@ -73,11 +90,18 @@ public class MyGotoDeclarationHandler extends GotoDeclarationHandlerBase {
     return file.getName().equals("conftest.py");
   }
 
+  private boolean hasNameParam(@NotNull PyFunction fixture, String name) {
+    PyDecoratorList decorators = fixture.getDecoratorList();
+    String regex = String.format(".+fixture\\((.|\\n)*name\\s*=\\s*['\\\"]%s['\\\"](.|\\n)+", name);
+    if (decorators != null)
+      for (PyDecorator decorator : decorators.getDecorators())
+        if (decorator.getText().matches(regex)) return true;
+    return false;
+  }
+
   @NotNull
-  private Collection<PyFunction> findFunctions(@NotNull PsiElement source) {
-    Project project = source.getProject();
+  private Collection<PyFunction> findFunctions(String text, Project project) {
     GlobalSearchScope scope = GlobalSearchScope.projectScope(project);
-    String text = source.getText();
     return PyFunctionNameIndex.find(text, project, scope);
   }
 
