@@ -13,7 +13,7 @@
     ]]>
     </change-notes>
 
-    <idea-version since-build="173" until-build="181.*"/>
+    <idea-version since-build="173" until-build="182.*"/>
 
     <depends>com.intellij.modules.lang</depends>
     <depends>com.intellij.modules.python</depends>
