@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.pytest</id>
     <name>Pytest</name>
-    <version>0.0.5</version>
+    <version>1.0.0</version>
     <vendor email="support@pytest.store" url="http://pytest.store">Victor Titor</vendor>
 
     <description><![CDATA[
@@ -9,7 +9,8 @@
     ]]></description>
 
     <change-notes><![CDATA[
-      <ul><li>Add support for custom fixture names</li></ul>
+      <ul><li>Add support for custom fixture names</li>
+      <li>Compatibility with latest PyCharm (182.*) builds</li></ul>
     ]]>
     </change-notes>
 
