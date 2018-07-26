@@ -2,7 +2,7 @@
     <id>com.pytest</id>
     <name>Pytest</name>
     <version>1.0.0</version>
-    <vendor email="support@pytest.store" url="http://pytest.store">Victor Titor</vendor>
+    <vendor email="vtitor.edumix@gmail.com" url="https://github.com/vtitor/pytest-plugin">Victor Titor</vendor>
 
     <description><![CDATA[
       Pytest framework support
